@@ -1,0 +1,1 @@
+# keda-weather_scaler
