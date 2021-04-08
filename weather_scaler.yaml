@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: weather-deploy
+spec:
+  selector:
+    matchLabels:
+      run: nginx
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: nginx
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        ports:
+        - containerPort: 80
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: weather-scaledobject
+  labels:
+    deploymentName: weather-deploy
+spec:
+  minReplicaCount: 1
+  maxReplicaCount: 4
+  pollingInterval: 3  # Optional. Default: 30 seconds
+  cooldownPeriod:  5 # Optional. Default: 300 seconds
+  scaleTargetRef:
+    name: weather-deploy
+  triggers:
+  - type: weather
+    metadata:
+      host:             "https://api.openweathermap.org/data/2.5/weather?q=%s&APPID=%s&units=metric"
+      cityName:         "Bursa,tr"
+      apiKey:           "YOUR_API_KEY_HERE"  
+      thresholdValue:   "1"
+      preference:       "Temp"
